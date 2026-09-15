@@ -1,29 +1,15 @@
-const $ = selector => document.querySelector(selector);
-const modal = $('#client-modal');
-let selectedName = 'João Silva';
-document.querySelectorAll('.customers button').forEach(button => button.addEventListener('click', () => {
-  selectedName = button.dataset.name;
-  $('#work-current').textContent = button.dataset.name;
-  $('#name').textContent = button.dataset.name;
-  $('#car').textContent = button.dataset.car;
-  $('#risk').textContent = `${button.dataset.risk}%`;
-  $('#risk-label').textContent = Number(button.dataset.risk) >= 75 ? 'ALTO RISCO' : 'RISCO MODERADO';
-  $('#factors').innerHTML = button.dataset.factors.split('|').map(item => `<li>${item}</li>`).join('');
-  modal.classList.add('show');
-}));
-document.querySelectorAll('.close').forEach(button => button.addEventListener('click', () => modal.classList.remove('show')));
-modal.addEventListener('click', event => { if (event.target === modal) modal.classList.remove('show'); });
-$('#opportunity').addEventListener('click', () => {
-  modal.classList.remove('show');
-  const success = $('#success');
-  success.classList.add('show', 'processing');
-  $('#status').textContent = 'Analisando oportunidade...';
-  $('#lead-message').textContent = `${selectedName} foi adicionado à lista de oportunidades da concessionária.`;
-  setTimeout(() => { $('#status').textContent = 'Oportunidade priorizada para a concessionária'; success.classList.remove('processing'); }, 850);
-});
-$('#back-customers').addEventListener('click', () => {
-  $('#success').classList.remove('show');
-  $('#risk-counter').textContent = '2.183';
-  $('#prioritized').textContent = '1 oportunidade priorizada';
-  $('#risk-counter').parentElement.classList.add('updated');
-});
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const clients=[{n:'João Silva',c:'Ranger 2021',r:87,i:'JS',l:'14 meses atrás',s:'4',x:['14 meses desde o último serviço','Baixa frequência de manutenção na rede Ford','Último atendimento fora da rede']},{n:'Marcos Oliveira',c:'Territory 2022',r:71,i:'MO',l:'11 meses atrás',s:'5',x:['Serviço preventivo atrasado','Frequência de manutenção reduzida','Garantia próxima do fim']},{n:'Ana Souza',c:'Bronco 2021',r:64,i:'AS',l:'10 meses atrás',s:'3',x:['Último serviço há mais de 10 meses','Histórico de manutenção irregular','Sem próximo agendamento']},{n:'Lucas Ferreira',c:'Ranger 2020',r:61,i:'LF',l:'12 meses atrás',s:'3',x:['Revisão anual pendente','Baixa recorrência recente','Garantia encerrada']},{n:'Patrícia Gomes',c:'Maverick 2022',r:58,i:'PG',l:'9 meses atrás',s:'4',x:['Contato sem resposta','Serviço próximo do prazo','Queda de visitas']},{n:'Diego Martins',c:'Bronco 2021',r:54,i:'DM',l:'8 meses atrás',s:'5',x:['Próximo serviço recomendado','Sem agendamento ativo','Frequência em queda']}];let selected=clients[0],created=false;
+function queue(target){$(target).innerHTML=clients.map((c,i)=>`<button class="queue-item ${c===selected?'active':''}" data-i="${i}"><i>${c.i}</i><span><b>${c.n}</b><small>${c.c}</small></span><em>● ${c.r}%</em></button>`).join('');$$(target+' .queue-item').forEach(b=>b.onclick=()=>select(clients[b.dataset.i]));}
+function select(c){selected=c;$('#initials').textContent=c.i;$('#name').textContent=c.n;$('#car').textContent=c.c;$('#risk-pill').textContent=`${c.r}% risco`;$('#last').textContent=c.l;$('#services').textContent=c.s;$('#signals').innerHTML=c.x.map(x=>`<li>${x}</li>`).join('');queue('#quick-list');queue('#full-list')}
+function view(id){$$('.view').forEach(x=>x.classList.toggle('active',x.id===id));$$('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===id));$('#title').textContent={home:'Visão geral',risk:'Clientes em risco',leads:'Leads gerados',data:'Dados e sinais'}[id]}
+$$('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));select(selected);
+$('#create').onclick=()=>{$('#modal').classList.add('show');$('#modal-text').textContent=`${selected.n} foi adicionado à lista de oportunidades da concessionária.`};$('#back').onclick=()=>{if(!created){created=true;$('#risk-count').textContent='2.183';$('#risk-note').textContent='1 oportunidade priorizada';$('#lead-total').textContent='13';$('#side-leads').textContent='13';$('#new').textContent='04';$('#rows').insertAdjacentHTML('afterbegin',`<tr><td>${selected.n}</td><td>${selected.c}</td><td>Revisão preventiva</td><td>Alta</td><td>Novo</td></tr>`)}$('#modal').classList.remove('show');view('leads')};
+
+// Retention workspace: recurring customers receive relationship actions.
+$('.insight').remove(); $('.model').remove();
+const retained=[{n:'Carla Mendes',c:'Maverick 2023',i:'CM',score:92,share:91,last:'2 meses atrás',visits:8},{n:'Rafael Costa',c:'Ranger 2022',i:'RC',score:89,share:86,last:'1 mês atrás',visits:10},{n:'Beatriz Lima',c:'Territory 2023',i:'BL',score:86,share:82,last:'3 meses atrás',visits:7},{n:'Felipe Rocha',c:'Bronco 2021',i:'FR',score:83,share:79,last:'2 meses atrás',visits:6},{n:'Mariana Alves',c:'Maverick 2022',i:'MA',score:81,share:77,last:'3 meses atrás',visits:6}];let retainedSelected=retained[0];
+const retentionButton=document.createElement('button');retentionButton.dataset.view='retention';retentionButton.innerHTML='↑ Alta retenção <em>24</em>';document.querySelector('nav').insertBefore(retentionButton,$('[data-view="leads"]'));
+const retention=document.createElement('section');retention.id='retention';retention.className='view';retention.innerHTML='<div class="intro"><div><h2>Clientes com alta retenção</h2><p>Base recorrente elegível para relacionamento e fidelização.</p></div><button>Service Share ≥ 75%⌄</button></div><div class="riskgrid"><article class="card"><small>CARTEIRA RECORRENTE</small><h3>Clientes com maior vínculo</h3><div id="retention-list"></div></article><article class="card profile"><small>PERFIL DE RELACIONAMENTO</small><div class="person"><i id="ret-i"></i><div><h2 id="ret-n"></h2><p id="ret-c"></p></div><b id="ret-score"></b></div><div class="profilemetrics"><span>Service Share<b id="ret-share"></b></span><span>Último serviço<b id="ret-last"></b></span><span>Visitas na rede<b id="ret-visits"></b></span></div><div class="action"><small>PRÓXIMA AÇÃO</small><h3>Convite para check-up de temporada</h3><p>Antecipar o próximo contato e manter o vínculo com a rede Ford.</p><button id="invite">ENVIAR CONVITE →</button></div></article></div>';
+$('#leads').before(retention);function renderRetention(){const list=$('#retention-list');list.innerHTML=retained.map((c,i)=>`<button class="queue-item ${c===retainedSelected?'active':''}" data-r="${i}"><i>${c.i}</i><span><b>${c.n}</b><small>${c.c}</small></span><em class="ret-score">${c.score}%</em></button>`).join('');$$('#retention-list button').forEach(b=>b.onclick=()=>{retainedSelected=retained[b.dataset.r];renderRetention()});$('#ret-i').textContent=retainedSelected.i;$('#ret-n').textContent=retainedSelected.n;$('#ret-c').textContent=retainedSelected.c;$('#ret-score').textContent=`${retainedSelected.score}% retenção`;$('#ret-share').textContent=`${retainedSelected.share}%`;$('#ret-last').textContent=retainedSelected.last;$('#ret-visits').textContent=retainedSelected.visits}renderRetention();
+retentionButton.onclick=()=>{view('retention');$('#title').textContent='Clientes com alta retenção'};$('#invite').onclick=()=>{const b=$('#invite');b.textContent='✓ CONVITE ENVIADO';b.disabled=true;setTimeout(()=>{b.textContent='ENVIAR CONVITE →';b.disabled=false},1800)};
